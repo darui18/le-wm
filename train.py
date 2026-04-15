@@ -12,6 +12,7 @@ from omegaconf import OmegaConf, open_dict
 
 from jepa import JEPA
 from module import ARPredictor, Embedder, MLP, SIGReg
+from lerobot_dataset import LeRobotDatasetConfig, LeRobotSequenceDataset
 from utils import get_column_normalizer, get_img_preprocessor, ModelObjectCallBack
 
 
@@ -51,9 +52,19 @@ def run(cfg):
     ##       dataset       ##
     #########################
 
-    dataset = swm.data.HDF5Dataset(**cfg.data.dataset, transform=None)
+    dataset_cfg = dict(cfg.data.dataset)
+    dataset_type = dataset_cfg.pop("type", "hdf5")
+
+    if dataset_type == "hdf5":
+        dataset = swm.data.HDF5Dataset(**dataset_cfg, transform=None)
+    elif dataset_type == "lerobot":
+        lerobot_cfg = LeRobotDatasetConfig(**dataset_cfg)
+        dataset = LeRobotSequenceDataset(config=lerobot_cfg, transform=None)
+    else:
+        raise ValueError(f"Unsupported dataset type: {dataset_type}")
+
     transforms = [get_img_preprocessor(source='pixels', target='pixels', img_size=cfg.img_size)]
-    
+
     with open_dict(cfg):
         for col in cfg.data.dataset.keys_to_load:
             if col.startswith("pixels"):
