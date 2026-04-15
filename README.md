@@ -34,6 +34,7 @@ This codebase builds on [stable-worldmodel](https://github.com/galilai-group/sta
 uv venv --python=3.10
 source .venv/bin/activate
 uv pip install stable-worldmodel[train,env]
+uv pip install datasets
 ```
 
 ## Data
@@ -50,6 +51,22 @@ export STABLEWM_HOME=/path/to/your/storage
 ```
 
 Dataset names are specified without the `.h5` extension. For example, `config/train/data/pusht.yaml` references `pusht_expert_train`, which resolves to `$STABLEWM_HOME/pusht_expert_train.h5`.
+
+
+### LeRobot / LIBERO 数据集
+
+现在训练脚本支持 `LeRobot` 格式数据（基于 HuggingFace `datasets`），可以直接使用 `LIBERO` 数据集：
+
+```bash
+python train.py data=libero_lerobot
+```
+
+默认配置位于 `config/train/data/libero_lerobot.yaml`，主要字段包括：
+- `repo_id`: LeRobot 数据集仓库（默认 `lerobot/libero_10`）
+- `split`: 数据划分（如 `train`）
+- `key_mapping`: 将 LeRobot 字段映射到训练所需键（`pixels` / `action` / `proprio`）
+
+如果你的 LIBERO 相机视角不同，只需修改 `key_mapping.pixels`（例如 `observation.images.wrist`）。
 
 ## Training
 
